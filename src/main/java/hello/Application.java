@@ -37,6 +37,16 @@ public class Application implements CommandLineRunner {
         List<Object[]> splitUpNames = customers.stream()
                 .map(name -> name.split(" "))
                 .collect(Collectors.toList());
+
+        splitUpNames.forEach(name -> log.info(String.format("Insert record for %s %s", name[0], name[1])));
+
+        jdbcTemplate.batchUpdate("INSERT INTO customers(first_name, last_name) VALUES (?,?)", splitUpNames);
+
+        log.info("Querying for customer records where first_name = 'Josh':");
+        jdbcTemplate.query(
+                "SELECT id, first_name, last_name FROM customers WHERE first_name = ?", new Object[] { "Josh" },
+                (rs, rowNum) -> new Customer(rs.getLong("id"), rs.getString("first_name"), rs.getString("last_name"))
+        ).forEach(customer -> log.info(customer.toString()));
     }
 
     
